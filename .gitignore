@@ -1,0 +1,98 @@
+# ============================
+# Environment & Secrets
+# ============================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ============================
+# Python
+# ============================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+.Python
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ============================
+# Virtual Environments
+# ============================
+venv/
+.venv/
+env/
+ENV/
+.env/
+
+# ============================
+# Jupyter Notebook
+# ============================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+# ============================
+# Testing & Coverage
+# ============================
+.pytest_cache/
+.coverage
+htmlcov/
+*.cover
+nosetests.xml
+coverage.xml
+*.coveragerc
+
+# ============================
+# IDE & Editors
+# ============================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ============================
+# OS Files
+# ============================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ============================
+# Project-specific
+# ============================
+# Generated reports (auto-created at runtime)
+reports/
+*.html
+*.pdf
+
+# Temporary / scratch scripts
+fix_nb.py
+
+# Downloaded research papers (large binary files)
+*.pdf
+attention_is_all_you_need.pdf
+
+# PyPI build artifacts
+*.whl
+*.tar.gz
+
+# LangSmith / LangChain cache
+.langchain/
+
+# Local QA regression data (auto-generated at runtime)
+regression_memory.json
