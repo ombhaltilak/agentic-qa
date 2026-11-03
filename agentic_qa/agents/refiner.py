@@ -6,47 +6,33 @@ actionable insights for the Red-Team Agent's next iteration.
 """
 
 import json
-import os
-from langchain_openai import ChatOpenAI
+
 from langchain_core.messages import SystemMessage, HumanMessage
+
 from agentic_qa.graph.state import QAState
+from agentic_qa.utils import llm as llm_utils
 from agentic_qa.utils.prompt_templates import REFINER_SYSTEM_PROMPT, REFINER_ANALYSIS_PROMPT
-
-
-def _get_llm() -> ChatOpenAI:
-    return ChatOpenAI(
-        model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
-        temperature=0.3,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        openai_api_base=os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1"),
-    )
 
 
 def _parse_analysis(response_text: str) -> dict:
     try:
-        text = response_text.strip()
-        if "```json" in text:
-            text = text.split("```json")[1].split("```")[0].strip()
-        elif "```" in text:
-            text = text.split("```")[1].split("```")[0].strip()
-        data = json.loads(text)
+        data = llm_utils.parse_json_response(response_text)
+        if not isinstance(data, dict):
+            raise ValueError("expected a JSON object")
+        patterns = [str(p) for p in data.get("new_failure_patterns", []) if str(p).strip()]
         return {
-            "new_failure_patterns": data.get("new_failure_patterns", []),
+            "new_failure_patterns": patterns,
             "root_causes": data.get("root_causes", []),
             "coverage_gaps": data.get("coverage_gaps", []),
-            "recommended_focus": data.get("recommended_focus", ""),
-            "coverage_score": float(data.get("coverage_score", 0.5)),
-            "severity_distribution": data.get("severity_distribution", {}),
+            "recommended_focus": str(data.get("recommended_focus", "")),
         }
-    except (json.JSONDecodeError, KeyError, IndexError) as e:
+    except ValueError as e:
         print(f"  Warning: Failed to parse Refiner response: {e}")
         return {
-            "new_failure_patterns": ["Parse error - using generic patterns"],
+            "new_failure_patterns": [],
             "root_causes": [],
             "coverage_gaps": [],
             "recommended_focus": "Retry with broader coverage",
-            "coverage_score": 0.3,
-            "severity_distribution": {},
         }
 
 
@@ -63,7 +49,7 @@ def refiner_node(state: QAState) -> dict:
     failures = [v for v in verdicts if v["status"] in ("fail", "error", "partial")]
     if not failures:
         print(f"  No failures to analyze! All tests passed.")
-        return {"failure_patterns": ["All tests passed in this iteration"], "coverage_score": 1.0}
+        return {}
 
     print(f"  Analyzing {len(failures)} failure(s)...")
 
@@ -76,7 +62,7 @@ def refiner_node(state: QAState) -> dict:
         previous_patterns=previous_patterns_str,
     )
 
-    llm = _get_llm()
+    llm = llm_utils.get_llm("refiner", temperature=0.3)
     system_prompt = REFINER_SYSTEM_PROMPT.format(
         sut_description=state.get("sut_description", "Unknown System"),
         domain=state.get("domain", "general"),
@@ -85,7 +71,7 @@ def refiner_node(state: QAState) -> dict:
         SystemMessage(content=system_prompt),
         HumanMessage(content=analysis_prompt),
     ]
-    response = llm.invoke(messages)
+    response = llm_utils.invoke(llm, messages, "refiner")
     analysis = _parse_analysis(response.content)
 
     print(f"\n  Analysis Results:")
@@ -100,10 +86,9 @@ def refiner_node(state: QAState) -> dict:
         print(f"     Coverage gaps:")
         for gap in analysis["coverage_gaps"]:
             print(f"       o {gap}")
-    print(f"     Coverage score: {analysis['coverage_score']:.1%}")
     print(f"     Next focus: {analysis['recommended_focus'][:80]}")
 
-    return {
-        "failure_patterns": analysis["new_failure_patterns"],
-        "coverage_score": analysis["coverage_score"],
-    }
+    # Only genuinely new patterns are accumulated (keeps convergence detection meaningful).
+    seen = {p.strip().lower() for p in previous_patterns}
+    new_patterns = [p for p in analysis["new_failure_patterns"] if p.strip().lower() not in seen]
+    return {"failure_patterns": new_patterns, "new_pattern_counts": [len(new_patterns)]}

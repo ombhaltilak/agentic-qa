@@ -1,0 +1,20 @@
+{"id": "G01", "question": "What BLEU score does the Transformer achieve on the WMT 2014 English-to-German translation task?", "reference_answer": "28.4 BLEU", "source": "attention_is_all_you_need.pdf, PDF page 1 (abstract)"}
+{"id": "G02", "question": "What BLEU score does the Transformer reach on WMT 2014 English-to-French?", "reference_answer": "41.8 BLEU, a new single-model state of the art, after training for 3.5 days on eight GPUs", "source": "PDF page 1 (abstract)"}
+{"id": "G03", "question": "How many identical layers are in the Transformer's encoder stack?", "reference_answer": "N = 6 identical layers", "source": "PDF page 3, section 3.1"}
+{"id": "G04", "question": "What is the output dimension d_model used by all sub-layers and embedding layers?", "reference_answer": "d_model = 512", "source": "PDF page 3, section 3.1"}
+{"id": "G05", "question": "How many attention heads does the base model use, and what is the dimension of each head?", "reference_answer": "h = 8 heads, with d_k = d_v = d_model/h = 64", "source": "PDF page 5, section 3.2.2"}
+{"id": "G06", "question": "What is the inner-layer dimensionality of the position-wise feed-forward network?", "reference_answer": "d_ff = 2048", "source": "PDF page 5, section 3.3"}
+{"id": "G07", "question": "In scaled dot-product attention, what are the dot products of the query and keys divided by?", "reference_answer": "The square root of d_k (√d_k)", "source": "PDF page 4, section 3.2.1"}
+{"id": "G08", "question": "Which optimizer and hyperparameters were used for training?", "reference_answer": "Adam with β1 = 0.9, β2 = 0.98 and ε = 10^-9", "source": "PDF page 7, section 5.3"}
+{"id": "G09", "question": "How many warmup steps were used in the learning-rate schedule?", "reference_answer": "warmup_steps = 4000", "source": "PDF page 7, section 5.3"}
+{"id": "G10", "question": "What dropout rate was used for the base model?", "reference_answer": "P_drop = 0.1", "source": "PDF page 8, section 5.4"}
+{"id": "G11", "question": "What value of label smoothing was used, and what effect did it have?", "reference_answer": "ε_ls = 0.1; it hurts perplexity but improves accuracy and BLEU score", "source": "PDF page 8, section 5.4"}
+{"id": "G12", "question": "How long were the base models trained?", "reference_answer": "100,000 steps or 12 hours (about 0.4 seconds per step)", "source": "PDF page 7, section 5.2"}
+{"id": "G13", "question": "How long were the big models trained?", "reference_answer": "300,000 steps (3.5 days), at about 1.0 second per step", "source": "PDF page 7, section 5.2"}
+{"id": "G14", "question": "What vocabulary size was used for English-German with byte-pair encoding?", "reference_answer": "A shared source-target vocabulary of about 37000 tokens", "source": "PDF page 7, section 5.1"}
+{"id": "G15", "question": "What kind of functions are used for the positional encodings?", "reference_answer": "Sine and cosine functions of different frequencies (each dimension corresponds to a sinusoid)", "source": "PDF page 6, section 3.5"}
+{"id": "G16", "question": "On which dataset was the Transformer evaluated for English constituency parsing?", "reference_answer": "The Wall Street Journal (WSJ) portion of the Penn Treebank, about 40K training sentences", "source": "PDF page 9, section 6.3"}
+{"id": "G17", "question": "How many parameters does GPT-3 have according to this paper?", "answerable": false, "category": "missing_data", "source": "Not in the paper (GPT-3 is not discussed)"}
+{"id": "G18", "question": "What top-1 accuracy does the Transformer achieve on ImageNet?", "answerable": false, "category": "missing_data", "source": "Not in the paper (no image classification results)"}
+{"id": "G19", "question": "What score did the Transformer get on the SQuAD question-answering benchmark?", "answerable": false, "category": "missing_data", "source": "Not in the paper"}
+{"id": "G20", "question": "How much electricity, in kWh, did training the big Transformer consume?", "answerable": false, "category": "missing_data", "source": "Not in the paper (only training time and GPU count are given)"}

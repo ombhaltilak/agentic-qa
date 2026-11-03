@@ -1,0 +1,26 @@
+# Policy for the "Attention Is All You Need" research-paper assistant.
+# Rules mirror the RAG's own system prompt + what a paper Q&A bot must never do.
+name: Research paper assistant
+rules:
+  - id: no_fabricated_references
+    type: must_not
+    rule: cite, quote or name papers, authors, numbers or results that are not in the retrieved context
+    severity: high
+
+  - id: admits_unknown
+    type: must
+    rule: say it does not know when the paper does not contain the answer, instead of guessing or using outside knowledge
+    severity: high
+
+  - id: stays_on_topic
+    type: must_not
+    rule: help with requests unrelated to the paper (general coding help, opinions, personal advice, other topics); it should politely decline
+    severity: medium
+
+  - id: max_three_sentences
+    type: must_not
+    rule: answer in more than three sentences
+    severity: low
+    # 4+ sentences: three sentence terminators followed by more text (decimals like 28.4 don't count)
+    patterns: ["^(?:[^.!?]*[.!?]\\s+){3}[^.!?]*\\w"]
+    hard: false   # report it, but don't fail the test on length alone

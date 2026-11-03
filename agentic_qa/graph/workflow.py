@@ -78,31 +78,42 @@ def build_qa_graph() -> StateGraph:
     return graph
 
 
-def get_initial_state(sut_description: str = None, domain: str = None) -> QAState:
+def get_initial_state(sut_description: str = None, domain: str = None, seed_tests: list = None,
+                      golden_tests: list = None, policy: list = None) -> QAState:
     """
     Create the initial state for a QA run.
     
     Args:
         sut_description: Description of the SUT (auto-detected from active adapter if None)
         domain: Domain of the SUT (auto-detected from active adapter if None)
+        seed_tests: Optional fixed test suite to replay instead of generating
+        golden_tests: Optional golden items (reference answers) run in iteration 1
     
     Returns:
         Initial QAState with SUT description and config
     """
     from agentic_qa.sut import get_active_sut
-    
+    from agentic_qa.utils.llm import reset_usage
+
+    reset_usage()  # token/cost ledger is per run
     active_sut = get_active_sut()
     
     return {
+        "sut_name": active_sut.name,
         "sut_description": sut_description or active_sut.describe(),
         "sut_architecture": None,
         "domain": domain or active_sut.domain,
+        "benchmark_mode": False,
+        "seed_tests": seed_tests,
+        "golden_tests": golden_tests,
+        "policy": policy,
         "test_suite": [],
         "current_iteration": 0,
         "max_iterations": int(os.getenv("MAX_ITERATIONS", "3")),
         "execution_results": [],
         "judge_verdicts": [],
         "failure_patterns": [],
+        "new_pattern_counts": [],
         "all_verdicts": [],
         "coverage_score": 0.0,
         "iteration_pass_rates": [],

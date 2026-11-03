@@ -7,7 +7,8 @@ Provides adapter classes to connect ANY system for testing:
 """
 
 from agentic_qa.sut.base import BaseSUTAdapter
-from agentic_qa.sut.api_adapter import APIAdapter
+from agentic_qa.sut.api_adapter import APIAdapter, OpenAIChatAdapter
+from agentic_qa.sut.langchain_adapter import LangChainAdapter
 from agentic_qa.sut.callable_adapter import CallableAdapter
 from agentic_qa.sut.financial_rag import FinancialDocumentRAG
 
@@ -32,6 +33,8 @@ def get_active_sut() -> BaseSUTAdapter:
 __all__ = [
     "BaseSUTAdapter",
     "APIAdapter",
+    "OpenAIChatAdapter",
+    "LangChainAdapter",
     "CallableAdapter",
     "FinancialDocumentRAG",
     "set_active_sut",

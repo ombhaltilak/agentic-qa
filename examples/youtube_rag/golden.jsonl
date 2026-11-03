@@ -1,0 +1,20 @@
+{"id": "Y01", "question": "What is the resolution of the handwritten digit images in the video?", "reference_answer": "28x28 pixels", "source": "aircAruvnKk 0:04"}
+{"id": "Y02", "question": "How many neurons are in the input layer of the network?", "reference_answer": "784 neurons, one per pixel of the 28x28 image", "source": "aircAruvnKk 2:58-3:32"}
+{"id": "Y03", "question": "What does a neuron hold, according to the video?", "reference_answer": "A number between 0 and 1", "source": "aircAruvnKk 2:39-2:58"}
+{"id": "Y04", "question": "What is the number inside a neuron called?", "reference_answer": "Its activation", "source": "aircAruvnKk 3:14"}
+{"id": "Y05", "question": "How many neurons does the output layer have and what do they represent?", "reference_answer": "10 neurons, each representing one of the digits", "source": "aircAruvnKk 3:32"}
+{"id": "Y06", "question": "How many hidden layers does the network have and how many neurons are in each?", "reference_answer": "Two hidden layers with 16 neurons each", "source": "aircAruvnKk 4:09"}
+{"id": "Y07", "question": "Why did the author choose 16 neurons for the hidden layers?", "reference_answer": "It was a somewhat arbitrary choice; 16 was just a nice number to fit on the screen", "source": "aircAruvnKk 4:09-4:24"}
+{"id": "Y08", "question": "How does the network pick which digit an image is?", "reference_answer": "The brightest neuron (highest activation) in the output layer is the network's choice", "source": "aircAruvnKk 5:22"}
+{"id": "Y09", "question": "What subcomponents does the video say make up a 9?", "reference_answer": "A loop up top and a line on the right", "source": "aircAruvnKk 5:54"}
+{"id": "Y10", "question": "What is the sigmoid function used for in the network?", "reference_answer": "It squishes the weighted sum into the range between 0 and 1; it is also called a logistic curve", "source": "aircAruvnKk 10:10-10:28"}
+{"id": "Y11", "question": "What is the bias of a neuron?", "reference_answer": "A number added to the weighted sum before the sigmoid; it sets how high the weighted sum must be before the neuron becomes meaningfully active (e.g. -10)", "source": "aircAruvnKk 10:59-11:31"}
+{"id": "Y12", "question": "How many weights and biases does the network have in total?", "reference_answer": "Almost exactly 13,000", "source": "aircAruvnKk 12:14"}
+{"id": "Y13", "question": "How many weights connect the first layer to the first hidden layer?", "reference_answer": "784 times 16 weights, along with 16 biases", "source": "aircAruvnKk 11:59"}
+{"id": "Y14", "question": "What does 'learning' mean for this network?", "reference_answer": "Getting the computer to find a valid setting for all the weights and biases so it solves the problem", "source": "aircAruvnKk 12:31"}
+{"id": "Y15", "question": "Which chapter of the linear algebra series does the author recommend?", "reference_answer": "Chapter 3", "source": "aircAruvnKk 14:24"}
+{"id": "Y16", "question": "What activation function does Lisha Li say modern networks use instead of sigmoid, and what does it stand for?", "reference_answer": "ReLU, rectified linear unit, which takes max(0, a); it is much easier to train", "source": "aircAruvnKk 17:30-17:42"}
+{"id": "Y17", "question": "What test accuracy does the network reach on the MNIST dataset?", "answerable": false, "category": "missing_data", "source": "Not in the video (accuracy is not mentioned)"}
+{"id": "Y18", "question": "What learning rate is used to train the network?", "answerable": false, "category": "missing_data", "source": "Not in the video (training is deferred to the next video)"}
+{"id": "Y19", "question": "Which Python library does the author use to implement the network?", "answerable": false, "category": "missing_data", "source": "Not in the video"}
+{"id": "Y20", "question": "What year was this video published?", "answerable": false, "category": "missing_data", "source": "Not in the transcript"}

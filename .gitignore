@@ -2,10 +2,11 @@
 # Environment & Secrets
 # ============================
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 *.pem
 *.key
+.streamlit/secrets.toml
 
 # ============================
 # Python
@@ -42,6 +43,9 @@ ENV/
 # Testing & Coverage
 # ============================
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.tox/
 .coverage
 htmlcov/
 *.cover
@@ -83,9 +87,6 @@ reports/
 # Temporary / scratch scripts
 fix_nb.py
 
-# Downloaded research papers (large binary files)
-*.pdf
-attention_is_all_you_need.pdf
 
 # PyPI build artifacts
 *.whl
@@ -94,5 +95,23 @@ attention_is_all_you_need.pdf
 # LangSmith / LangChain cache
 .langchain/
 
-# Local QA regression data (auto-generated at runtime)
+# Local QA regression data + run exports (auto-generated at runtime;
+# contain your system's responses)
 regression_memory.json
+qa_run*.json
+*.log
+# Your own labels / diffs / benchmark output (examples/ keeps its sample labels)
+/labels*.jsonl
+/diff*.md
+/bugs*.json
+
+# Example data fetched at runtime (YouTube transcripts, papers)
+transcript_*.json
+
+# Backups and local tool state
+*.bak
+.claude/
+
+# Cached vector indexes (examples)
+.cache/
+

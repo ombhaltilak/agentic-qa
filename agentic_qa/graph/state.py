@@ -10,9 +10,10 @@ from typing import TypedDict, List, Optional, Annotated
 from operator import add
 
 
-class TestCase(TypedDict):
+class TestCase(TypedDict, total=False):
     """A single test case in the pipeline state."""
     id: str
+    iteration: int
     input_data: str
     expected_behavior: str
     edge_case_type: str
@@ -24,14 +25,15 @@ class TestResult(TypedDict):
     """Result from executing a test case against the SUT."""
     test_id: str
     sut_output: str
+    retrieved_contexts: List[str]
     execution_time: float
     error: Optional[str]
 
 
-class Verdict(TypedDict):
+class Verdict(TypedDict, total=False):
     """Judge Agent's evaluation of a test result."""
     test_id: str
-    status: str  # "pass", "fail", "error", "partial"
+    status: str  # "pass", "fail", "error", "partial", "invalid" (bad test)
     reasoning: str
     severity: str
     failure_category: Optional[str]
@@ -46,11 +48,14 @@ class QAState(TypedDict):
     the fields it needs and updates the fields it owns.
     """
     # ── System Configuration ──
+    sut_name: Optional[str]
     sut_description: str
     sut_architecture: Optional[str]
     domain: str  # e.g., "academic", "customer support", "legal", "general"
     benchmark_mode: Optional[bool]
-    
+    seed_tests: Optional[List[dict]]  # fixed suite to replay instead of generating
+    golden_tests: Optional[List[dict]]  # reference-answer items run in iteration 1
+    policy: Optional[List[dict]]  # organisation rules (agentic_qa.policy)
     
     # ── Test Suite (accumulated across iterations) ──
     test_suite: Annotated[List[TestCase], add]
@@ -67,6 +72,7 @@ class QAState(TypedDict):
     
     # ── Accumulated Intelligence ──
     failure_patterns: Annotated[List[str], add]
+    new_pattern_counts: Annotated[List[int], add]  # per refiner run; 0 => converged
     all_verdicts: Annotated[List[Verdict], add]
     
     # ── Metrics ──
@@ -75,3 +81,4 @@ class QAState(TypedDict):
     
     # ── Final Output ──
     final_report: Optional[str]
+    usage: Optional[dict]  # token / cost summary for the run

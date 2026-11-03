@@ -15,7 +15,8 @@ def should_continue(state: QAState) -> str:
     Conditions to STOP:
     1. Max iterations reached
     2. All tests passed (100% pass rate in current iteration)
-    3. No new failure patterns found (convergence)
+    3. Replay mode (fixed suite runs once)
+    4. No new failure patterns found by the last refiner run (convergence)
     
     Returns:
         "refine" - Continue to Refiner Agent for another iteration
@@ -34,18 +35,18 @@ def should_continue(state: QAState) -> str:
         return "report"
     
     # Condition 3: All tests passed
-    fail_count = sum(1 for v in verdicts if v["status"] in ("fail", "error"))
+    fail_count = sum(1 for v in verdicts if v["status"] in ("fail", "error", "partial"))
     if fail_count == 0:
         return "report"
-    
-    # Condition 4: Check for convergence (same failure patterns repeating)
-    failure_patterns = state.get("failure_patterns", [])
-    if len(failure_patterns) > 10:
-        # If the last 5 patterns are all duplicates of earlier ones, converged
-        recent = failure_patterns[-5:]
-        earlier = failure_patterns[:-5]
-        if all(p in earlier for p in recent):
-            return "report"
-    
+
+    # Condition 4: Replay mode runs the fixed suite once
+    if state.get("seed_tests"):
+        return "report"
+
+    # Condition 5: Convergence — the last refiner run found no new failure patterns
+    new_counts = state.get("new_pattern_counts", [])
+    if new_counts and new_counts[-1] == 0:
+        return "report"
+
     # Default: Continue refining
     return "refine"
