@@ -9,19 +9,11 @@ import json
 import os
 from collections import Counter
 from html import escape
-from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from agentic_qa.graph.state import QAState
+from agentic_qa.utils import llm as llm_utils
+from agentic_qa.utils.run_io import save_run
 from agentic_qa.utils.prompt_templates import REPORTER_SYSTEM_PROMPT, REPORTER_GENERATION_PROMPT
-
-
-def _get_llm() -> ChatOpenAI:
-    return ChatOpenAI(
-        model=os.getenv("MODEL_NAME", "gpt-4o-mini"),
-        temperature=0.2,
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        openai_api_base=os.getenv("OPENAI_API_BASE", "https://api.openai.com/v1"),
-    )
 
 
 def _label(value: object, default: str = "unknown") -> str:
@@ -39,14 +31,14 @@ def _report_metrics(state: QAState) -> dict:
     tests = state.get("test_suite", [])
     pass_rates = state.get("iteration_pass_rates", [])
     statuses = Counter(_label(v.get("status")) for v in verdicts)
-    severities = Counter(_label(v.get("severity"), "info") for v in verdicts)
+    severities = Counter(_label(v.get("severity"), "info") for v in verdicts if v.get("status") != "invalid")
     categories = Counter(
         _label(v.get("failure_category"), "uncategorized")
         for v in verdicts
-        if _label(v.get("status")) != "pass"
+        if _label(v.get("status")) not in ("pass", "invalid")
     )
     edge_cases = Counter(_label(t.get("edge_case_type")) for t in tests)
-    total = sum(statuses.values())
+    total = sum(statuses.values()) - statuses.get("invalid", 0)  # invalid tests don't count
     passing = statuses.get("pass", 0)
     current_pass = pass_rates[-1] if pass_rates else (passing / total if total else 0.0)
     first_pass = pass_rates[0] if pass_rates else current_pass
@@ -114,7 +106,8 @@ def _bar_chart(title: str, counts: Counter, colors: list[str], empty: str) -> st
 
 def _donut_chart(title: str, counts: Counter) -> str:
     total = sum(counts.values())
-    colors = {"pass": "#21a67a", "fail": "#ef476f", "error": "#ff9f1c", "partial": "#3a86ff", "unknown": "#7c8a9a"}
+    colors = {"pass": "#21a67a", "fail": "#ef476f", "error": "#ff9f1c", "partial": "#3a86ff",
+              "invalid": "#9b5de5", "unknown": "#7c8a9a"}
     if not total:
         segments = '<circle r="64" cx="90" cy="90" fill="none" stroke="#263244" stroke-width="26" />'
         legend = '<li><span style="background:#7c8a9a"></span>No verdicts yet</li>'
@@ -250,19 +243,22 @@ def reporter_node(state: QAState) -> dict:
         coverage_score=f"{coverage_score:.1%}",
     )
 
-    llm = _get_llm()
+    llm = llm_utils.get_llm("reporter", temperature=0.2)
     messages = [
         SystemMessage(content=REPORTER_SYSTEM_PROMPT),
         HumanMessage(content=report_prompt),
     ]
-    response = llm.invoke(messages)
-
-    report = response.content
+    try:
+        report = llm_utils.invoke(llm, messages, "reporter").content
+    except Exception as e:
+        print(f"  ⚠️  Reporter LLM failed ({e}); writing metrics-only report")
+        report = _fallback_report(state)
     print(f"  Report generated ({len(report)} characters)")
 
     # Save report to file
-    os.makedirs("reports", exist_ok=True)
-    report_path = f"reports/qa_report_iter{iteration}.md"
+    out_dir = os.getenv("REPORTS_DIR", "reports")
+    os.makedirs(out_dir, exist_ok=True)
+    report_path = os.path.join(out_dir, f"qa_report_iter{iteration}.md")
     with open(report_path, "w") as f:
         f.write(report)
     print(f"  Saved Markdown to: {report_path}")
@@ -273,18 +269,71 @@ def reporter_node(state: QAState) -> dict:
 
         html_template = _build_html_report(report, state)
         
-        html_path = f"reports/qa_report_iter{iteration}.html"
+        html_path = os.path.join(out_dir, f"qa_report_iter{iteration}.html")
         with open(html_path, "w") as f:
             f.write(html_template)
         print(f"  Saved HTML to: {html_path}")
         
-        # Automatically open in the user's default browser
-        abs_path = os.path.abspath(html_path)
-        webbrowser.open(f"file://{abs_path}")
-        print(f"  🌐 Launched HTML report in your browser!")
+        if os.getenv("AUTO_OPEN_REPORT", "1") == "1":
+            webbrowser.open(f"file://{os.path.abspath(html_path)}")
+            print(f"  🌐 Launched HTML report in your browser!")
     except ImportError:
         print("  ⚠️ Could not generate HTML report because the 'markdown' package is missing.")
     except Exception as e:
         print(f"  ⚠️ Could not open HTML report: {e}")
 
-    return {"final_report": report}
+    usage = llm_utils.usage_summary()
+    report = report.rstrip() + "\n\n" + _metrics_appendix({**state, "usage": usage})
+    final = {**state, "final_report": report, "usage": usage}
+    json_path = save_run(final, os.path.join(out_dir, f"qa_run_iter{iteration}.json"))
+    print(f"  Saved run data to: {json_path}")
+
+    return {"final_report": report, "usage": usage}
+
+
+def _metrics_appendix(state: QAState) -> str:
+    """Deterministic, measured numbers appended to the (LLM-written) report."""
+    from agentic_qa.utils.run_io import run_summary
+
+    s = run_summary(state)
+    lat, use, gold = s["sut_latency"], s["usage"], s["golden"]
+    fmt = lambda x: "n/a" if x is None else f"{x:.3f}s"  # noqa: E731
+    lines = [
+        "## Measured Metrics",
+        "",
+        "| Metric | Value |",
+        "|---|---|",
+        f"| Pass rate | {s['pass_rate']:.1%} ({s['passed']}/{s['total_verdicts']}) |",
+        f"| Taxonomy coverage | {s['coverage']:.1%} |",
+        f"| Critical/high failures | {s['critical_or_high_failures']} |",
+        f"| SUT latency p50 / p95 / max | {fmt(lat['p50_s'])} / {fmt(lat['p95_s'])} / {fmt(lat['max_s'])} |",
+        f"| QA run tokens (in / out) | {use['input_tokens']:,} / {use['output_tokens']:,} over {use['calls']} calls |",
+        f"| Estimated QA run cost | ${use['estimated_cost_usd']:.4f} |",
+    ]
+    if gold:
+        lines += [
+            f"| Golden accuracy | {gold['accuracy']:.1%} ({gold['items']} items) |",
+            f"| **Hallucination rate** | **{gold['hallucination_rate']:.1%}** |",
+            f"| Golden passed every check | {gold.get('passed_all_checks', 0)}/{gold['items']} |",
+        ]
+    if use.get("unpriced_models"):
+        lines += ["", f"_Cost excludes unpriced models: {', '.join(use['unpriced_models'])} (set LLM_PRICES_JSON)._"]
+    return "\n".join(lines)
+
+
+def _fallback_report(state: QAState) -> str:
+    """Deterministic Markdown report used when the reporter LLM is unavailable."""
+    m = _report_metrics(state)
+    failing = [v for v in state.get("all_verdicts", []) if v.get("status") not in ("pass", "invalid")]
+    lines = [
+        "# QA Report",
+        "",
+        f"- Tests: {m['tests']}  |  Verdicts: {m['verdicts']}  |  Failures: {m['failures']}",
+        f"- Final pass rate: {_pct(m['current_pass'])}  |  Coverage: {_pct(m['coverage'])}",
+        "",
+        "## Failures",
+    ]
+    lines += [f"- **{v.get('test_id')}** [{v.get('severity')}] {str(v.get('reasoning'))[:200]}" for v in failing[:30]]
+    if not failing:
+        lines.append("- None")
+    return "\n".join(lines)

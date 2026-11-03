@@ -216,10 +216,19 @@ def render_sidebar():
 
         st.markdown("---")
         st.markdown("### ⚙️ Pipeline Config")
-        run_mode = st.radio("Run Mode", ["Autonomous (Agents generate tests)", "Benchmark (Fixed dataset)"], index=0)
+        run_mode = st.radio("Run Mode", ["Autonomous (Agents generate tests)", "Replay (saved test suite)"], index=0)
+        replay_upload = None
+        if "Replay" in run_mode:
+            replay_upload = st.file_uploader("Saved run / suite (.json or .jsonl)", type=["json", "jsonl"])
         max_iter = st.slider("Max Iterations", 1, 10, int(os.getenv("MAX_ITERATIONS", "3")))
         tests_per_iter = st.slider("Tests per Iteration", 3, 15, int(os.getenv("TESTS_PER_ITERATION", "5")))
         model = st.text_input("LLM Model", value=os.getenv("MODEL_NAME", "gpt-4o-mini"))
+        backends = ["auto", "llm", "jev", "cascade", "ensemble"]
+        current_backend = os.getenv("JUDGE_BACKEND", "auto")
+        judge_backend = st.selectbox(
+            "Judge", backends, index=backends.index(current_backend) if current_backend in backends else 0,
+            help="jev/cascade/ensemble use Jev (free: OPENCODE_API_KEY → jev-1.13-free)",
+        )
 
         st.markdown("---")
         st.markdown("### 📡 LangSmith")
@@ -235,7 +244,7 @@ def render_sidebar():
             "sut_mode": sut_mode, "api_url": api_url, "input_key": input_key,
             "output_key": output_key, "sut_name": sut_name, "sut_description": sut_description,
             "sut_domain": sut_domain, "max_iter": max_iter, "tests_per_iter": tests_per_iter, "model": model,
-            "run_mode": run_mode,
+            "run_mode": run_mode, "replay_upload": replay_upload, "judge_backend": judge_backend,
         }
 
 
@@ -320,6 +329,7 @@ def main():
         os.environ["MAX_ITERATIONS"] = str(config["max_iter"])
         os.environ["TESTS_PER_ITERATION"] = str(config["tests_per_iter"])
         os.environ["MODEL_NAME"] = config["model"]
+        os.environ["JUDGE_BACKEND"] = config["judge_backend"]
 
         if not os.getenv("OPENAI_API_KEY") or os.getenv("OPENAI_API_KEY") == "your-openai-api-key-here":
             st.error("❌ Please set OPENAI_API_KEY in your .env file")
@@ -332,14 +342,23 @@ def main():
             try:
                 from agentic_qa.graph.workflow import build_qa_graph, get_initial_state
 
+                seed_tests = None
+                if "Replay" in config["run_mode"]:
+                    if config["replay_upload"] is None:
+                        st.error("❌ Upload a saved run or test suite to replay")
+                        return
+                    import tempfile
+                    from agentic_qa.utils.run_io import load_test_suite
+                    suffix = ".jsonl" if config["replay_upload"].name.endswith(".jsonl") else ".json"
+                    with tempfile.NamedTemporaryFile("wb", suffix=suffix, delete=False) as tmp:
+                        tmp.write(config["replay_upload"].getvalue())
+                    seed_tests = load_test_suite(tmp.name)
+                    st.info(f"Replaying {len(seed_tests)} saved test case(s).")
+
                 graph = build_qa_graph()
-                initial_state = get_initial_state()
-                initial_state["max_iterations"] = config["max_iter"]
-                if "Benchmark" in config["run_mode"]:
-                    initial_state["benchmark_mode"] = True
-                    # In a real app we'd load a CSV/JSON dataset here. For demo we mock it.
-                    st.info("Running in Benchmark mode using fixed reference dataset.")
-                    
+                initial_state = get_initial_state(seed_tests=seed_tests)
+                initial_state["max_iterations"] = 1 if seed_tests else config["max_iter"]
+
                 progress_bar = st.progress(0, text="Starting pipeline...")
                 final_state = None
 

@@ -1,4 +1,3 @@
-import pandas as pd
 from collections import Counter
 from statistics import mean
 from agentic_qa.agents.regression_memory import load_regression_cases
@@ -16,6 +15,10 @@ def display_qa_results(state: dict, num_regression_cases: int = 10) -> tuple:
         A tuple of (verdicts_df, regression_df) pandas DataFrames for further inspection.
     """
     try:
+        import pandas as pd  # optional: only this notebook helper needs it
+    except ImportError as e:
+        raise ImportError('display_qa_results needs pandas: pip install "agentic-qa[dashboard]" (or pandas)') from e
+    try:
         from IPython.display import display, Markdown, HTML
         in_jupyter = True
     except ImportError:
@@ -28,7 +31,7 @@ def display_qa_results(state: dict, num_regression_cases: int = 10) -> tuple:
             print(f"\n{'='*40}\n{text}\n{'='*40}")
 
     # 1. Deduced Architecture
-    _display_header("Deduced Architecture (Graphify)")
+    _display_header("Hypothesized Architecture (unverified, from description)")
     if in_jupyter:
         display(Markdown(state.get("sut_architecture", "No architecture deduced.")))
     else:

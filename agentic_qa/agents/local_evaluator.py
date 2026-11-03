@@ -91,6 +91,9 @@ def _flatten_contexts(value: object) -> list[str]:
         for item in value:
             flattened.extend(_flatten_contexts(item))
         return flattened
+    page_content = getattr(value, "page_content", None)  # LangChain Document
+    if isinstance(page_content, str):
+        return [page_content] if page_content.strip() else []
     return [str(value)]
 
 
@@ -126,7 +129,9 @@ def evaluate_result(result: dict) -> dict:
     error = result.get("execution_error")
 
     normalized_output = unescape(output).strip()
-    contexts = _extract_contexts(normalized_output)
+    contexts = [
+        str(c).strip() for c in (result.get("retrieved_contexts") or []) if str(c).strip()
+    ] or _extract_contexts(normalized_output)
     context_text = "\n".join(contexts)
     expected_tokens = _tokens(expected)
     output_tokens = _tokens(normalized_output)
