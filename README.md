@@ -1,12 +1,15 @@
 # 🛡️ Agentic QA — Autonomous Multi-Agent Testing for RAG & LLMs
 
 [![PyPI](https://img.shields.io/pypi/v/agentic-qa?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/agentic-qa/)
+[![Downloads](https://img.shields.io/pypi/dm/agentic-qa?color=blue)](https://pypi.org/project/agentic-qa/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-1C3C3C?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/ombhaltilak/agentic-qa/blob/main/LICENSE)
 [![CI](https://github.com/ombhaltilak/agentic-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/ombhaltilak/agentic-qa/actions/workflows/ci.yml)
 
 **Agentic QA** is an open-source Python library that autonomously tests RAG pipelines and LLM applications — no manual test cases required.
+
+📦 **PyPI:** [pypi.org/project/agentic-qa](https://pypi.org/project/agentic-qa/) · `pip install agentic-qa`
 
 It operates as a **self-improving red-team loop**: a team of LangGraph agents generates adversarial inputs, executes them against your system, evaluates the responses, and refines its attack strategy based on failures — all without human intervention.
 
@@ -39,6 +42,8 @@ Metric libraries such as RAGAS score answers to test cases **you** provide. Agen
 ## 🚀 Quick Start
 
 ### Installation
+
+From [PyPI](https://pypi.org/project/agentic-qa/):
 
 ```bash
 pip install agentic-qa
