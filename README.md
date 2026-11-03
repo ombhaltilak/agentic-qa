@@ -3,7 +3,7 @@
 [![PyPI](https://img.shields.io/pypi/v/agentic-qa?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/agentic-qa/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-1C3C3C?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/ombhaltilak/agentic-qa/blob/main/LICENSE)
 [![CI](https://github.com/ombhaltilak/agentic-qa/actions/workflows/ci.yml/badge.svg)](https://github.com/ombhaltilak/agentic-qa/actions/workflows/ci.yml)
 
 **Agentic QA** is an open-source Python library that autonomously tests RAG pipelines and LLM applications — no manual test cases required.
@@ -41,11 +41,9 @@ Metric libraries such as RAGAS score answers to test cases **you** provide. Agen
 ### Installation
 
 ```bash
-pip install "git+https://github.com/ombhaltilak/agentic-qa.git"
+pip install agentic-qa
 # or, to develop: git clone https://github.com/ombhaltilak/agentic-qa && cd agentic-qa && pip install -e ".[dev]"
 ```
-
-> The PyPI package is still 0.2.1 and lacks the features below; install from GitHub until 0.3.0 is published.
 
 Set your OpenAI API key:
 
@@ -127,8 +125,8 @@ The CLI prints a per-category pass-rate table and writes Markdown, HTML and JSON
 
 Two worked examples:
 
-- [`examples/research_paper_rag/`](examples/research_paper_rag/): a FAISS + GPT-4o-mini RAG over *Attention Is All You Need*, with a golden set checked against the PDF and a policy file.
-- [`examples/youtube_rag/`](examples/youtube_rag/): a Flask YouTube-video assistant tested over HTTP. Golden set checked against the transcript; the policy checks timestamp citations against the retrieved chunks. The run found that the assistant **invents timestamp ranges** in about a quarter of its answers, while answering 85–90% of golden questions correctly with no invented facts on unanswerable ones.
+- [`examples/research_paper_rag/`](https://github.com/ombhaltilak/agentic-qa/blob/main/examples/research_paper_rag/): a FAISS + GPT-4o-mini RAG over *Attention Is All You Need*, with a golden set checked against the PDF and a policy file.
+- [`examples/youtube_rag/`](https://github.com/ombhaltilak/agentic-qa/blob/main/examples/youtube_rag/): a Flask YouTube-video assistant tested over HTTP. Golden set checked against the transcript; the policy checks timestamp citations against the retrieved chunks. The run found that the assistant **invents timestamp ranges** in about a quarter of its answers, while answering 85–90% of golden questions correctly with no invented facts on unanswerable ones.
 
 ### Connect anything
 
@@ -301,7 +299,7 @@ Why cascade rather than a vote: a 2026 study of decision models vs. LLM judges (
 ### Using Jev for free
 
 ```bash
-pip install "agentic-qa[jev] @ git+https://github.com/ombhaltilak/agentic-qa.git"
+pip install "agentic-qa[jev]"
 export OPENCODE_API_KEY=...      # OpenCode Zen key → uses jev-1.13-free
 agentic-qa calibrate             # measure Jev's accuracy / Brier score on labeled data
 agentic-qa run --target my_app.rag:answer --judge cascade
@@ -538,10 +536,10 @@ CI runs the suite on Python 3.10–3.12 for every pull request and every push to
 ## 📦 Install options
 
 ```bash
-pip install "agentic-qa @ git+https://github.com/ombhaltilak/agentic-qa.git"                # core
-pip install "agentic-qa[jev] @ git+https://github.com/ombhaltilak/agentic-qa.git"           # + Jev judge (free via OpenCode Zen)
-pip install "agentic-qa[ragas] @ git+https://github.com/ombhaltilak/agentic-qa.git"         # + RAGAS metrics
-pip install "agentic-qa[dashboard] @ git+https://github.com/ombhaltilak/agentic-qa.git"     # + Streamlit dashboard
+pip install agentic-qa                 # core
+pip install "agentic-qa[jev]"          # + Jev judge (free via OpenCode Zen)
+pip install "agentic-qa[ragas]"        # + RAGAS metrics
+pip install "agentic-qa[dashboard]"    # + Streamlit dashboard
 ```
 
 ---
