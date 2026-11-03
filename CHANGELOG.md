@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.0 (unreleased)
+## 0.3.0
 
 ### Judging you can trust
 - Layered judge: deterministic assertions (PII, injection compliance, prompt leaks, …) override model verdicts.
