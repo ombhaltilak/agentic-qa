@@ -1,6 +1,6 @@
 # 🛡️ Agentic QA — Autonomous Multi-Agent Testing for RAG & LLMs
 
-[![PyPI](https://img.shields.io/pypi/v/agentic-qa?color=blue&logo=pypi&logoColor=white)](https://pypi.org/project/agentic-qa/)
+[![PyPI](https://img.shields.io/pypi/v/agentic-qa?color=blue&logo=pypi&logoColor=white&cacheSeconds=3600)](https://pypi.org/project/agentic-qa/)
 [![Downloads](https://img.shields.io/pypi/dm/agentic-qa?color=blue)](https://pypi.org/project/agentic-qa/)
 [![Python](https://img.shields.io/badge/Python-3.10+-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![LangGraph](https://img.shields.io/badge/LangGraph-0.2+-1C3C3C?logo=langchain&logoColor=white)](https://github.com/langchain-ai/langgraph)
